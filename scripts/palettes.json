@@ -1,0 +1,38 @@
+{
+  "_comment": "Surface palettes for scripts/recolor.py. catppuccin is upstream's original, and neutral is what the repo ships. Kept out of themes/ because Herdr loads every themes/*.json as a theme.",
+  "slots": ["canvas", "chrome", "background", "surface", "raised", "border"],
+  "presets": {
+    "catppuccin": {
+      "canvas": "#11111b",
+      "chrome": "#181825",
+      "background": "#1e1e2e",
+      "surface": "#262637",
+      "raised": "#313244",
+      "border": "#45475a"
+    },
+    "neutral": {
+      "canvas": "#000000",
+      "chrome": "#0a0a0a",
+      "background": "#0e0e0e",
+      "surface": "#151515",
+      "raised": "#1e1e1e",
+      "border": "#2c2c2c"
+    },
+    "oled": {
+      "canvas": "#000000",
+      "chrome": "#000000",
+      "background": "#000000",
+      "surface": "#0d0d0d",
+      "raised": "#181818",
+      "border": "#262626"
+    },
+    "tinted": {
+      "canvas": "#000003",
+      "chrome": "#08080d",
+      "background": "#0c0c12",
+      "surface": "#13131b",
+      "raised": "#1b1b25",
+      "border": "#2a2a36"
+    }
+  }
+}
