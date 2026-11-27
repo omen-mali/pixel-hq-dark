@@ -36,7 +36,7 @@ export default class Toast extends View {
       .id("company-toast")
       .size_full()
       .relative()
-      .children(box("#45475a", "#181825", "#11111b"))
+      .children(box("#2c2c2c", "#0a0a0a", "#000000"))
       .cursor_pointer()
       .hover((s) => s.opacity(0.96))
       .on_click(() => {
@@ -121,7 +121,7 @@ export default class Toast extends View {
                         .h(22)
                         .px(6)
                         .items_center()
-                        .children(box("#45475a", "#313244", "#11111b"))
+                        .children(box("#2c2c2c", "#1e1e1e", "#000000"))
                         .cursor_pointer()
                         .hover((s) => s.text_color("#ffffff"))
                         .on_click((_e, cx) => {

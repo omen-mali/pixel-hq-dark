@@ -275,7 +275,7 @@ export function duckMood(m, height, { still = false, species = "crab", pace = 1 
     props = motion(sparks, "opacity", { from: 0.2, to: 1, period: 420, easing: "ease-in-out" });
   } else if (rest) {
     if (urging) {
-      const ALARM = "#fab387", DARK = "#181825", BELL = "#f9e2af", LEG = "#b5593b";
+      const ALARM = "#fab387", DARK = "#0a0a0a", BELL = "#f9e2af", LEG = "#b5593b";
       const clockBody = [
         rect(-84, 120, 52, 48, ALARM),
         rect(-78, 114, 40, 60, ALARM),

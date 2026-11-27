@@ -1,3 +1,6 @@
+> **Pixel HQ Dark** is a fork of [bnhan2710/pixel-hq](https://github.com/bnhan2710/pixel-hq) with a true dark palette.
+> What differs, the palette switch and how it stays in sync with upstream: [FORK.md](FORK.md).
+
 <p align="center">
   <b>English</b> · <a href="README.vi.md">Tiếng Việt</a>
 </p>
