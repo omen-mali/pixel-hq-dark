@@ -46,13 +46,13 @@ function ledWall(x, w, base, isMusicPlaying = false, load = 0) {
   if (w >= 64) {
     const rx = x + 3, ry = rt - 11;
     o.push(
-      r(rx, ry + 2, 18, 9, "#313244"),
-      r(rx + 4, ry, 10, 2, "#45475a"),
-      r(rx + 2, ry + 4, 4, 5, "#181825"),
-      r(rx + 3, ry + 5, 2, 3, isMusicPlaying ? "#89b4fa" : "#45475a"),
-      r(rx + 12, ry + 4, 4, 5, "#181825"),
-      r(rx + 13, ry + 5, 2, 3, isMusicPlaying ? "#89b4fa" : "#45475a"),
-      r(rx + 7, ry + 4, 4, 4, "#11111b"),
+      r(rx, ry + 2, 18, 9, "#1e1e1e"),
+      r(rx + 4, ry, 10, 2, "#2c2c2c"),
+      r(rx + 2, ry + 4, 4, 5, "#0a0a0a"),
+      r(rx + 3, ry + 5, 2, 3, isMusicPlaying ? "#89b4fa" : "#2c2c2c"),
+      r(rx + 12, ry + 4, 4, 5, "#0a0a0a"),
+      r(rx + 13, ry + 5, 2, 3, isMusicPlaying ? "#89b4fa" : "#2c2c2c"),
+      r(rx + 7, ry + 4, 4, 4, "#000000"),
       r(rx + 15, ry - 3, 1, 3, "#89b4fa"),
       r(rx + 8, ry + 2, 2, 1, isMusicPlaying ? "#a6e3a1" : "#585b70")
     );

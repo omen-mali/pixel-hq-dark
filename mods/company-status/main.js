@@ -267,7 +267,7 @@ export default class WorkspaceStatus extends View {
                 
                 .max_w(170)
                 .cursor_pointer()
-                .bg("#313244")
+                .bg("#1e1e1e")
                 .text_color("#f9e2af")
                 .tooltip(setup.msg || "Installing audio engine... · Click to view")
                 .on_click(() => run("mod.open", { name: "company-music" }))
@@ -300,9 +300,9 @@ export default class WorkspaceStatus extends View {
                 .px(5)
                 .py(2)
                 
-                .bg("#181825")
+                .bg("#0a0a0a")
                 .border_1()
-                .border_color("#313244")
+                .border_color("#1e1e1e")
                 .on_mouse_down("right", (_e, cx) => {
                   cx.stop_propagation();
                   hideMusicBox(cx);
