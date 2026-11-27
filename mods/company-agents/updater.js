@@ -1,7 +1,7 @@
 import { appHome, readTextFile, writeTextFile, shared, setShared, notify } from "herdr";
 
-const REPO_API = "https://api.github.com/repos/bnhan2710/pixel-hq";
-const REPO_RAW = "https://raw.githubusercontent.com/bnhan2710/pixel-hq";
+const REPO_API = "https://api.github.com/repos/omen-mali/pixel-hq-dark";
+const REPO_RAW = "https://raw.githubusercontent.com/omen-mali/pixel-hq-dark";
 const LEGACY_VERSION_FILE = "mods/company-agents/version.json";
 const LAST_LEGACY_VERSION = "1.8.6";
 const UPDATE_TIMEOUT = 120000;
