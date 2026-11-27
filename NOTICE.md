@@ -15,4 +15,6 @@ Pixel HQ is built on other people's work:
 
 Claude, Codex, OpenCode, Antigravity and Herdr are names and marks of their respective owners. The pets are fan-made pixel drawings; this project is not affiliated with or endorsed by any of them.
 
+This repository is a fork of [bnhan2710/pixel-hq](https://github.com/bnhan2710/pixel-hq) (MIT), recolored to a true dark palette (see `FORK.md`).
+
 Everything else here is MIT, see `LICENSE`.
