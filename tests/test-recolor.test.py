@@ -214,8 +214,11 @@ def test_round_trips_on_real_mods():
     with tempfile.TemporaryDirectory() as td:
         pal = palettes_with(td, STRESS, overrides=STRESS_OVERRIDES)
         root = copy_repo(Path(td) / "repo")
+        # The repo holds neutral; take the copy back to upstream's colors with the real palettes
+        # (which also checks the real neutral is a usable source), then apply the stress neutral.
+        code, _ = run(["--from", "neutral", "--to", "catppuccin", "--root", str(root)])
+        assert code == 0
         start = snapshot(root)
-        # Groups start at their upstream colors, so first apply neutral the way the repo will.
         run(["--palettes", pal, "--from", "catppuccin", "--to", "neutral", "--root", str(root)])
         neutral = snapshot(root)
         assert neutral != start, "the stress factors should change the scene"
@@ -235,6 +238,7 @@ def test_inventory_and_check_with_groups():
     with tempfile.TemporaryDirectory() as td:
         pal = palettes_with(td, STRESS, overrides=STRESS_OVERRIDES)
         root = copy_repo(Path(td) / "repo")
+        run(["--from", "neutral", "--to", "catppuccin", "--root", str(root)])  # back to upstream's colors
         code, out = run(["--palettes", pal, "--inventory", "--root", str(root)])
         assert code == 0 and "#262a42" not in out and "#4a5b80" in out, "group colors covered, pet colors listed"
         code, out = run(["--palettes", pal, "--check", "--from", "catppuccin", "--root", str(root)])
