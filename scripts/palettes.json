@@ -51,9 +51,13 @@
       },
       "presets": {
         "catppuccin": {"saturation": 1, "lightness": 1},
-        "neutral": {"saturation": 1, "lightness": 1},
-        "oled": {"saturation": 1, "lightness": 1},
-        "tinted": {"saturation": 1, "lightness": 1}
+        "neutral": {"saturation": 0.15, "lightness": 0.6},
+        "oled": {"saturation": 0.1, "lightness": 0.45},
+        "tinted": {"saturation": 0.5, "lightness": 0.6}
+      },
+      "overrides": {
+        "neutral": {"#242843": "#1d1d20", "#2e3250": "#222225"},
+        "tinted": {"#0c0e1c": "#090a0e", "#12152c": "#0e0f16"}
       }
     }
   }
