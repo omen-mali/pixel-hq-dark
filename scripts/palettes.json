@@ -34,5 +34,27 @@
       "raised": "#1b1b25",
       "border": "#2a2a36"
     }
+  },
+  "groups": {
+    "scene": {
+      "_comment": "The office room and the floor-card tiles: walls, floor, furniture, rack, board and window frames. Colors are upstream's (catppuccin) values. Each preset scales their HLS saturation and lightness. Sky, screen contents, pets, clock hands, the train and the helper bot's visor are left out on purpose. #585e82 and #2b2f45 are shared by the chairs and the helper bots, so the bots darken with them.",
+      "files": ["mods/company-agents/scene.js", "mods/company-agents/main.js", "mods/company-spaces/main.js"],
+      "colors": {
+        "wall": ["#262a42", "#161827", "#2c3150", "#363c5f", "#2a2f52", "#20243d"],
+        "floor": ["#242843", "#1c1f36", "#0d0f1a", "#171a2c"],
+        "furniture": ["#2a2e4a", "#1c2038", "#2a2f4f", "#0a0c1a", "#3a3f66", "#4a5090", "#1c1e2c", "#4d5273", "#3c4054",
+                      "#474c66", "#363a4f", "#32364b", "#585e82", "#2b2f45", "#14172a", "#454a68", "#3b3f5a", "#262a40",
+                      "#2e3250", "#323650"],
+        "rack": ["#1a1f3d", "#12152c", "#2c3366", "#0a0d26", "#3a4180", "#10132a", "#252b52", "#0f1226", "#323a70"],
+        "board": ["#2a2e48"],
+        "frames": ["#0c0e1c"]
+      },
+      "presets": {
+        "catppuccin": {"saturation": 1, "lightness": 1},
+        "neutral": {"saturation": 1, "lightness": 1},
+        "oled": {"saturation": 1, "lightness": 1},
+        "tinted": {"saturation": 1, "lightness": 1}
+      }
+    }
   }
 }

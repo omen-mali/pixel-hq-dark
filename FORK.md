@@ -26,6 +26,12 @@ Accent and status colors, the office scene's own colors and the pets are current
 | raised | `#313244` | `#1e1e1e` | `#181818` | `#1b1b25` |
 | border | `#45475a` | `#2c2c2c` | `#262626` | `#2a2a36` |
 
+**Color groups.** Art with too many shades for one slot each (the office scene and floor tiles) is a group in
+`palettes.json`: a list of upstream's colors by role, the files it applies to, and per preset a saturation and
+lightness factor (hue is kept). When two colors would end up as the same shade, `recolor.py` refuses and names
+the pair; add an `overrides` entry for that preset to split them. `--inventory` lists dark blue-gray colors no
+slot or group covers. After an upstream merge, add any new room colors it shows to the right role.
+
 The repo always holds **neutral**. Other palettes exist only in your local install:
 
 ```sh
@@ -71,6 +77,7 @@ git fetch upstream
 git switch -c sync/upstream-$(date +%Y%m%d)
 git merge upstream/main
 python3 scripts/recolor.py --check --from catppuccin    # new upstream code brings Catppuccin shades
+python3 scripts/recolor.py --inventory                  # new navy shades no group covers yet
 python3 scripts/recolor.py --from catppuccin --to neutral
 python3 tests/test-recolor.test.py && bash tests/test-install-local.test.sh && bash tests/run-all.sh
 scripts/install-local.sh && herdr-app status

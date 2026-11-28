@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Tests for scripts/recolor.py: hex remapping, theme handling and --check.
+"""Tests for scripts/recolor.py: hex remapping, theme handling, color groups, --check and --inventory.
 
 Standalone (not in run-all.sh, to keep that upstream file untouched):
   python3 tests/test-recolor.test.py
 """
 
+import colorsys
 import importlib.util
 import io
 import json
+import shutil
 import sys
 import tempfile
 from contextlib import redirect_stdout, redirect_stderr
@@ -123,9 +125,130 @@ def test_check():
     print("PASS: --check lists leftovers and exits 1, then 0 once clean")
 
 
+def palettes_with(td, factors=None, groups=None, overrides=None):
+    """Write a copy of the real palettes.json into td with other scene factors, overrides or groups. Returns its path."""
+    data = json.loads((REPO / "scripts/palettes.json").read_text())
+    if groups is not None:
+        data["groups"] = groups
+    for name, per in (factors or {}).items():
+        data["groups"]["scene"]["presets"][name] = per
+    if overrides is not None:
+        data["groups"]["scene"]["overrides"] = overrides
+    path = Path(td) / "palettes.json"
+    path.write_text(json.dumps(data))
+    return str(path)
+
+
+# The plan's starting factors. They collapse four near-identical upstream pairs, which the
+# overrides split again (oled needs none: it can never be a source).
+STRESS = {"neutral": {"saturation": 0.15, "lightness": 0.6}, "oled": {"saturation": 0.1, "lightness": 0.45},
+          "tinted": {"saturation": 0.5, "lightness": 0.6}}
+STRESS_OVERRIDES = {"neutral": {"#242843": "#1d1d20", "#2e3250": "#222225"},
+                    "tinted": {"#0c0e1c": "#090a0e", "#12152c": "#0e0f16"}}
+
+
+def test_transform():
+    assert recolor.transform("2a2f52", 1, 1) == "2a2f52"
+    out = recolor.transform("2a2f52", 0.5, 0.6)
+    h0 = colorsys.rgb_to_hls(*(int("2a2f52"[i:i + 2], 16) / 255 for i in (0, 2, 4)))[0]
+    h1, l1, _ = colorsys.rgb_to_hls(*(int(out[i:i + 2], 16) / 255 for i in (0, 2, 4)))
+    assert abs(h0 - h1) < 0.02, (h0, h1)
+    assert l1 < 0.25, l1
+    assert recolor.transform("808080", 1, 5) == "ffffff", "lightness is clamped to 1"
+    print("PASS: transform keeps hue, scales lightness, clamps, and is exact at 1/1")
+
+
+def test_group_scope_and_clash():
+    group = {"files": {"mods/company-x/main.js"}, "colors": ["2a2f52"],
+             "presets": {p: (1, 1) for p in P}}
+    group["presets"]["neutral"] = (0, 0.5)
+    groups = {"g": group}
+    with tempfile.TemporaryDirectory() as td:
+        root = make_root(td)
+        (root / "mods/company-x/main.js").write_text('bg("#2a2f52");\n')
+        (root / "mods/company-x/sub/icon.svg").write_text('<rect fill="#2a2f52"/>')
+        recolor.recolor(root, CAT, NEU, recolor.group_maps(groups, "catppuccin", "neutral"))
+        assert "#2a2f52" not in (root / "mods/company-x/main.js").read_text(), "group file not recolored"
+        assert "#2a2f52" in (root / "mods/company-x/sub/icon.svg").read_text(), "group touched a file it does not name"
+    try:
+        recolor.file_map("mods/company-x/main.js", {"11111b": "000000"}, [({"mods/company-x/main.js"}, {"11111b": "222222"})])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a shade mapped by both a surface slot and a group must be refused")
+    print("PASS: groups only touch their files, and double-mapped shades are refused")
+
+
+def test_validate():
+    groups = recolor.load_groups(palettes_with(tempfile.mkdtemp(), STRESS, overrides=STRESS_OVERRIDES))
+    assert recolor.validate(P, groups) == [], recolor.validate(P, groups)
+    # Two colors that collapse to one shade under neutral make neutral ambiguous as a source.
+    bad = {"g": {"files": {"x"}, "colors": ["101010", "101011"], "presets": {p: (1, 1) for p in P}}}
+    bad["g"]["presets"]["neutral"] = (0, 1)
+    assert any("one shade" in p for p in recolor.validate(P, bad))
+    # A group shade equal to a surface shade is ambiguous too.
+    clash = {"g": {"files": {"x"}, "colors": ["0a0a0a"], "presets": {p: (1, 1) for p in P}}}
+    assert any("surface" in p for p in recolor.validate(P, clash))
+    with tempfile.TemporaryDirectory() as td:
+        path = palettes_with(td, groups={"scene": {"files": ["x"], "colors": {"a": ["#0a0a0a"]},
+                                                  "presets": {p: {"saturation": 1, "lightness": 1} for p in P}}})
+        code, _ = run(["--palettes", path, "--from", "catppuccin", "--to", "neutral", "--root", td])
+        assert code == 2, "main must refuse an ambiguous palette file"
+    print("PASS: validate catches collapsing and surface-clashing group shades; main exits 2")
+
+
+def copy_repo(td):
+    """Copy the repo's mods, layouts and themes into td and return it as a Path."""
+    root = Path(td)
+    for part in ("mods", "layouts", "themes"):
+        shutil.copytree(REPO / part, root / part, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    return root
+
+
+def snapshot(root):
+    return {p.relative_to(root).as_posix(): p.read_text().lower() for p in root.rglob("*")
+            if p.suffix in (".js", ".svg", ".json") and p.is_file()}
+
+
+def test_round_trips_on_real_mods():
+    with tempfile.TemporaryDirectory() as td:
+        pal = palettes_with(td, STRESS, overrides=STRESS_OVERRIDES)
+        root = copy_repo(Path(td) / "repo")
+        start = snapshot(root)
+        # Groups start at their upstream colors, so first apply neutral the way the repo will.
+        run(["--palettes", pal, "--from", "catppuccin", "--to", "neutral", "--root", str(root)])
+        neutral = snapshot(root)
+        assert neutral != start, "the stress factors should change the scene"
+        for other in ("tinted", "catppuccin"):
+            run(["--palettes", pal, "--from", "neutral", "--to", other, "--root", str(root)])
+            assert snapshot(root) != neutral, f"neutral -> {other} changed nothing"
+            run(["--palettes", pal, "--from", other, "--to", "neutral", "--root", str(root)])
+            after = snapshot(root)
+            diff = [(f, n) for f in neutral for n, (a, b) in
+                    enumerate(zip(neutral[f].splitlines(), after[f].splitlines()), 1) if a != b]
+            # Even the two upstream alpha-black overlays, which share neutral's canvas, come back.
+            assert diff == [], diff
+    print("PASS: neutral -> tinted -> neutral and neutral -> catppuccin -> neutral are lossless on the real mods")
+
+
+def test_inventory_and_check_with_groups():
+    with tempfile.TemporaryDirectory() as td:
+        pal = palettes_with(td, STRESS, overrides=STRESS_OVERRIDES)
+        root = copy_repo(Path(td) / "repo")
+        code, out = run(["--palettes", pal, "--inventory", "--root", str(root)])
+        assert code == 0 and "#262a42" not in out and "#4a5b80" in out, "group colors covered, pet colors listed"
+        code, out = run(["--palettes", pal, "--check", "--from", "catppuccin", "--root", str(root)])
+        assert code == 1 and "scene.js" in out, "scene colors are leftovers until the recolor runs"
+        run(["--palettes", pal, "--from", "catppuccin", "--to", "neutral", "--root", str(root)])
+        code, out = run(["--palettes", pal, "--check", "--from", "catppuccin", "--root", str(root)])
+        assert code == 0, out
+    print("PASS: --inventory skips group colors, --check reports group leftovers until recolored")
+
+
 if __name__ == "__main__":
     print("=== Testing scripts/recolor.py ===")
     for test in (test_text_mapping, test_no_chaining, test_identity_skipped_and_oled_refused,
-                 test_files_and_theme, test_round_trip, test_check):
+                 test_files_and_theme, test_round_trip, test_check, test_transform, test_group_scope_and_clash,
+                 test_validate, test_round_trips_on_real_mods, test_inventory_and_check_with_groups):
         test()
     print("All recolor tests passed.")
