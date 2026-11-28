@@ -22,21 +22,21 @@ const CODE = ["#cba6f7", "#89b4fa", "#a6e3a1", "#f9e2af", "#f5c2e7", "#94e2d5"];
 function ledWall(x, w, base, isMusicPlaying = false, load = 0) {
   const o = [], top = 8, rw = w >= 64 ? snap(Math.min(28, w * 0.34)) : snap(w), rh = snap(Math.min(base - top, 80)), rt = base - rh;
   // Server rack: a cabinet with a lit top cap, a darker side, a plinth with feet, and units of three kinds.
-  o.push(r(x - 2, rt - 2, rw + 4, rh + 2, "#0a0c1a"), r(x, rt, rw, rh, "#1a1f3d"), r(x + rw - 3, rt, 3, rh, "#12152c"), r(x, rt, 1, rh, "#2c3366"),
-    r(x, rt, rw, 3, "#2c3366"), r(x + 3, rt + 4, rw - 8, 5, "#0a0d26"), r(x + 3, rt + 4, rw - 8, 1, "#3a4180"), r(x, base - 5, rw, 5, "#10132a"), r(x + 1, base - 1, 4, 1, "#3a3f66"), r(x + rw - 5, base - 1, 4, 1, "#3a3f66"));
+  o.push(r(x - 2, rt - 2, rw + 4, rh + 2, "#0a0a0c"), r(x, rt, rw, rh, "#19191c"), r(x + rw - 3, rt, 3, rh, "#111214"), r(x, rt, 1, rh, "#292a2e"),
+    r(x, rt, rw, 3, "#292a2e"), r(x + 3, rt + 4, rw - 8, 5, "#0d0d10"), r(x + 3, rt + 4, rw - 8, 1, "#35353b"), r(x, base - 5, rw, 5, "#101013"), r(x + 1, base - 1, 4, 1, "#2e2e32"), r(x + rw - 5, base - 1, 4, 1, "#2e2e32"));
   for (let c = 0; c < Math.floor((rw - 12) / 2); c++) { const h = 1 + Math.floor(rnd(c * 3 + 1) * 3); o.push(r(x + 5 + c * 2, rt + 8 - h, 1, h, c % 4 === 3 ? "#f9e2af" : "#a6e3a1")); }
   o.push(r(x - 6, rt - 4, rw + 12, rh + 4, "#a78bfa0b"));
   const units = Math.max(3, Math.floor((rh - 22) / 11));
   for (let k = 0; k < units; k++) {
     const uy = rt + 11 + k * 11, ux = x + 3, uw = rw - 8, kind = k % 4, ledC = LIGHTS[[2, 2, 0, 3, 2, 1][k % 6]];
-    o.push(r(ux, uy, uw, 9, "#252b52"), r(ux, uy, uw, 1, "#3a4180"), r(ux, uy + 8, uw, 1, "#0f1226"));
-    if (kind === 0) for (let b = 0; b < Math.min(3, Math.floor((uw - 10) / 5)); b++) o.push(r(ux + 8 + b * 5, uy + 2, 4, 5, "#323a70"), r(ux + 8 + b * 5, uy + 2, 4, 1, "#4a529a"));
-    else if (kind === 1) for (let v = 0; v < Math.floor((uw - 10) / 3); v++) o.push(r(ux + 8 + v * 3, uy + 2, 1, 5, "#10132a"));
+    o.push(r(ux, uy, uw, 9, "#222226"), r(ux, uy, uw, 1, "#35353b"), r(ux, uy + 8, uw, 1, "#0f0f11"));
+    if (kind === 0) for (let b = 0; b < Math.min(3, Math.floor((uw - 10) / 5)); b++) o.push(r(ux + 8 + b * 5, uy + 2, 4, 5, "#2e2f33"), r(ux + 8 + b * 5, uy + 2, 4, 1, "#4a529a"));
+    else if (kind === 1) for (let v = 0; v < Math.floor((uw - 10) / 3); v++) o.push(r(ux + 8 + v * 3, uy + 2, 1, 5, "#101013"));
     else if (kind === 3) for (let q = 0; q < Math.floor((uw - 10) / 3); q++) {
       const pc = rnd(k * 9 + q) > 0.5 ? "#8fcb4f" : "#f4a23a", port = r(ux + 8 + q * 3, uy + 3, 2, 3, pc);
-      o.push(r(ux + 8 + q * 3, uy + 6, 2, 1, "#10132a"), (q + k) % 3 === 0 ? port.loop("opacity", { from: 0.2, to: 1, period: 350 + ((q * 170 + k * 90) % 500), easing: "linear" }) : port);
+      o.push(r(ux + 8 + q * 3, uy + 6, 2, 1, "#101013"), (q + k) % 3 === 0 ? port.loop("opacity", { from: 0.2, to: 1, period: 350 + ((q * 170 + k * 90) % 500), easing: "linear" }) : port);
     }
-    else for (let f = 0; f < (uw >= 28 ? 2 : 1); f++) o.push(r(ux + 8 + f * 8, uy + 2, 5, 5, "#10132a"), r(ux + 9 + f * 8, uy + 3, 3, 3, "#323a70"));
+    else for (let f = 0; f < (uw >= 28 ? 2 : 1); f++) o.push(r(ux + 8 + f * 8, uy + 2, 5, 5, "#101013"), r(ux + 9 + f * 8, uy + 3, 3, 3, "#2e2f33"));
     o.push(r(ux + 1, uy + 2, 5, 5, ledC + "33"));
     // One busy unit per sub-agent or shell job in the office: a green light blinking fast.
     const busy = k < load, led = r(ux + 2, uy + 3, 3, 3, busy ? "#a6e3a1" : ledC);
@@ -73,23 +73,23 @@ function ledWall(x, w, base, isMusicPlaying = false, load = 0) {
   const mh = Math.max(24, Math.min(deskY - top - 20, Math.round(mw * 0.8)));
   const my = deskY - 11 - mh, sy = my + mh + 3;
   o.push(r(mx - 4, my - 6, mw + 8, mh + 12, "#89b4fa0c"), // the screen's glow on the wall
-    r(mx - 6, base, mw + 12, 2, "#0a0c1a66"),
+    r(mx - 6, base, mw + 12, 2, "#0a0a0c66"),
     // a modern desk: a slim light top, thin dark legs with feet, a cable tray, a hanging white drawer and a glowing LED strip underneath
     r(mx - 5, deskY, mw + 10, 3, "#dfe3f2"), r(mx - 5, deskY, mw + 10, 1, "#f4f6fc"), r(mx - 5, deskY + 3, mw + 10, 1, "#9aa1c2"),
-    r(mx - 5, base - 3, mw + 10, 3, "#6fe0f01a"), r(mx - 2, deskY + 4, 2, base - deskY - 4, "#2a2e4a"), r(mx + mw, deskY + 4, 2, base - deskY - 4, "#2a2e4a"),
-    r(mx - 4, base - 1, 6, 1, "#2a2e4a"), r(mx + mw - 2, base - 1, 6, 1, "#2a2e4a"), r(mx + 1, deskY + 5, mw - 2, 2, "#1c2038"),
+    r(mx - 5, base - 3, mw + 10, 3, "#6fe0f01a"), r(mx - 2, deskY + 4, 2, base - deskY - 4, "#212224"), r(mx + mw, deskY + 4, 2, base - deskY - 4, "#212224"),
+    r(mx - 4, base - 1, 6, 1, "#212224"), r(mx + mw - 2, base - 1, 6, 1, "#212224"), r(mx + 1, deskY + 5, mw - 2, 2, "#18181a"),
     r(mx + mw - 16, deskY + 7, 14, 8, "#c9cee4"), r(mx + mw - 16, deskY + 7, 14, 1, "#e6e9f5"), r(mx + mw - 13, deskY + 10, 8, 1, "#7e86ad"), r(mx + mw - 13, deskY + 13, 8, 1, "#7e86ad"),
     r(mx - 2, deskY + 4, mw + 4, 1, "#6fe0f0").loop("opacity", { from: 0.3, to: 1, period: 2600, easing: "ease-in-out" }), r(mx - 2, deskY + 4, mw + 4, 1, "#c4a0ff").loop("opacity", { from: 1, to: 0.3, period: 2600, easing: "ease-in-out" }),
     // the monitor: bezel with a light top edge, a neck and a foot
     r(mx - 3, my - 6, mw + 6, 2, "#f5c2e7").loop("opacity", { from: 0.2, to: 1, period: 2600, easing: "ease-in-out" }), r(mx - 3, my - 6, mw + 6, 2, "#89dceb").loop("opacity", { from: 1, to: 0.2, period: 2600, easing: "ease-in-out" }),
-    r(mx - 3, my - 3, mw + 6, mh + 6, "#0a0c1a"), r(mx + Math.floor(mw / 2) - 1, my - 2, 2, 1, "#4a5090"), r(mx - 3, my - 3, mw + 6, 1, "#3a3f66"), r(mx, my, mw, mh, "#10143a"), r(mx, my + Math.floor(mh / 2), mw, Math.ceil(mh / 2), "#0e1233"),
-    r(mx + Math.floor(mw / 2) - 2, sy, 4, deskY - sy, "#0a0c1a"), r(mx + Math.floor(mw / 2) - 9, deskY - 3, 18, 3, "#0a0c1a"), r(mx + Math.floor(mw / 2) - 9, deskY - 3, 18, 1, "#3a3f66"),
+    r(mx - 3, my - 3, mw + 6, mh + 6, "#0a0a0c"), r(mx + Math.floor(mw / 2) - 1, my - 2, 2, 1, "#3e3f45"), r(mx - 3, my - 3, mw + 6, 1, "#2e2e32"), r(mx, my, mw, mh, "#10143a"), r(mx, my + Math.floor(mh / 2), mw, Math.ceil(mh / 2), "#0e1233"),
+    r(mx + Math.floor(mw / 2) - 2, sy, 4, deskY - sy, "#0a0a0c"), r(mx + Math.floor(mw / 2) - 9, deskY - 3, 18, 3, "#0a0a0c"), r(mx + Math.floor(mw / 2) - 9, deskY - 3, 18, 1, "#2e2e32"),
     // title bar with three dots and a tab
     r(mx, my, mw, 5, "#232a5c"), r(mx + 2, my + 1, 3, 3, "#f38ba8"), r(mx + 7, my + 1, 3, 3, "#f9e2af"), r(mx + 12, my + 1, 3, 3, "#a6e3a1"), r(mx + 18, my + 1, Math.min(14, mw - 40), 4, "#10143a"), flick(r(mx + mw - 12, my + 1, 9, 3, "#a6e3a1"), 0.35, 1000),
     // status bar
     r(mx, my + mh - 4, mw, 4, "#1d2250"), r(mx + 2, my + mh - 3, 8, 2, "#89b4fa"), flick(r(mx + 12, my + mh - 3, 6, 2, "#a6e3a1"), 0.3, 800), r(mx + mw - 9, my + mh - 3, 6, 2, "#f9e2af"),
     // keyboard, mouse, mug with steam
-    r(mx + 3, deskY - 3, Math.min(mw - 16, 26), 3, "#2a2f4f"), r(mx + 3, deskY - 3, Math.min(mw - 16, 26), 1, "#f5c2e7").loop("opacity", { from: 0.3, to: 1, period: 2600, easing: "ease-in-out" }), r(mx + 3, deskY - 3, Math.min(mw - 16, 26), 1, "#89dceb").loop("opacity", { from: 1, to: 0.3, period: 2600, easing: "ease-in-out" }), r(mx + mw - 12, deskY - 2, 4, 2, "#aab4d6"),
+    r(mx + 3, deskY - 3, Math.min(mw - 16, 26), 3, "#232326"), r(mx + 3, deskY - 3, Math.min(mw - 16, 26), 1, "#f5c2e7").loop("opacity", { from: 0.3, to: 1, period: 2600, easing: "ease-in-out" }), r(mx + 3, deskY - 3, Math.min(mw - 16, 26), 1, "#89dceb").loop("opacity", { from: 1, to: 0.3, period: 2600, easing: "ease-in-out" }), r(mx + mw - 12, deskY - 2, 4, 2, "#aab4d6"),
     r(mx + mw - 6, deskY - 5, 5, 5, "#e8e2d0"), r(mx + mw - 1, deskY - 4, 2, 3, "#e8e2d0"), r(mx + mw - 5, deskY - 5, 3, 1, "#6b4430"),
     r(mx + mw - 5, deskY - 9, 1, 3, "#cdd6f4").loop("opacity", { from: 0, to: 0.7, period: 1600, easing: "ease-in-out" }), r(mx + mw - 3, deskY - 11, 1, 3, "#cdd6f4").loop("opacity", { from: 0.6, to: 0, period: 1900, easing: "ease-in-out" }));
   // The monitor shows a worker processing data: code on top with the lines being run shimmering, and under it a live log (finished batches in green,
@@ -111,7 +111,7 @@ function ledWall(x, w, base, isMusicPlaying = false, load = 0) {
   const rows = Math.floor(edH / 4), indents = [0, 1, 1, 2, 2, 1, 2, 0, 1, 2, 1, 0], right = mx + mw - 9;
   for (let row = 0; row < rows; row++) {
     const ry = my + 8 + row * 4;
-    o.push(r(mx + 2, ry, 2, 2, "#3a3f66"));
+    o.push(r(mx + 2, ry, 2, 2, "#2e2e32"));
     if (row === 2) o.push(r(mx + 5, ry - 1, mw - 10, 4, "#ffffff0b"));
     if (row % 5 === 4) continue;
     let cx = mx + 7 + indents[row % indents.length] * 4;
@@ -186,11 +186,11 @@ export function scene(W, H, opts = {}) {
   const L = [];
 
   // Back wall: slate, a lighter band, a dark skirting and a dark line under the ceiling.
-  L.push(r(0, 0, W, yH, "#262a42"), r(0, 0, W, 4, "#161827"), r(0, yH - 32, W, 24, "#2c3150"), r(0, yH - 32, W, 4, "#363c5f"), r(0, base, W, 8, "#171a2c"));
+  L.push(r(0, 0, W, yH, "#1e1e20"), r(0, 0, W, 4, "#121213"), r(0, yH - 32, W, 24, "#242427"), r(0, yH - 32, W, 4, "#2b2b2f"), r(0, base, W, 8, "#131315"));
 
   // Windows onto the city: the sky of the hour, stars at night, the sun or the moon crossing from the left window to the right.
   for (const wn of wins) {
-    L.push(r(wn.x - 4, wn.y - 4, wn.w + 8, wn.h + 8, "#0c0e1c"), r(wn.x, wn.y, wn.w, wn.h, P.sky));
+    L.push(r(wn.x - 4, wn.y - 4, wn.w + 8, wn.h + 8, "#0b0b0d"), r(wn.x, wn.y, wn.w, wn.h, P.sky));
     if (P.stars) for (let i = 0; i < 6; i++) L.push(r(wn.x + 6 + (i % 4) * snap(wn.w / 4), wn.y + 6 + snap(rnd(i + wn.seed) * wn.h * 0.3), U, U, "#f5e9b0").loop("opacity", { from: 0.2, to: 0.9, period: 1500 + i * 400, easing: "ease-in-out" }));
   }
   {
@@ -224,7 +224,7 @@ export function scene(W, H, opts = {}) {
   }
   for (const wn of wins) {
     for (const f of [0.16, 0.5, 0.84]) for (let s = 0; s < wn.h / 4; s++) { const gx = wn.x + f * wn.w - s * 3; if (gx > wn.x + 2 && gx + 8 < wn.x + wn.w - 2) L.push(r(gx, wn.y + s * 4, 8, 4, "#ffffff0d")); }
-    L.push(r(wn.x + wn.w / 2 - 2, wn.y, 4, wn.h, "#0c0e1c"), r(wn.x, wn.y + wn.h / 2 - 2, wn.w, 4, "#0c0e1c"), r(wn.x - 8, wn.y + wn.h + 4, wn.w + 16, 5, "#7e86ad"));
+    L.push(r(wn.x + wn.w / 2 - 2, wn.y, 4, wn.h, "#0b0b0d"), r(wn.x, wn.y + wn.h / 2 - 2, wn.w, 4, "#0b0b0d"), r(wn.x - 8, wn.y + wn.h + 4, wn.w + 16, 5, "#7e86ad"));
   }
 
   // The clock between the windows shows the time: an hour and a minute hand drawn in 2px steps.
@@ -298,11 +298,11 @@ export function scene(W, H, opts = {}) {
   L.push(...ledWall(Lo.rackX, Lo.rackW, base, Boolean(opts.music), Math.max(0, opts.load ?? 0)));
 
   // Tiled floor: a dark base with a grid of 24px tiles, and a pool of window light under each window.
-  L.push(r(0, yH, W, H - yH, "#242843"));
-  for (let x = 0; x < W; x += 24) L.push(r(x, yH, 2, H - yH, "#1c1f36"));
-  for (let y = yH + 4; y < H; y += 24) L.push(r(0, y, W, 2, "#1c1f36"));
+  L.push(r(0, yH, W, H - yH, "#1d1d20"));
+  for (let x = 0; x < W; x += 24) L.push(r(x, yH, 2, H - yH, "#17181a"));
+  for (let y = yH + 4; y < H; y += 24) L.push(r(0, y, W, 2, "#17181a"));
   for (const wn of wins) for (let i = 0; i < 9; i++) L.push(r(wn.x + i * 6, yH + 8 + i * 8, Math.round(wn.w * 0.85), 8, P.pool));
-  L.push(r(0, yH, 4, H - yH, "#0d0f1a"), r(W - 4, yH, 4, H - yH, "#0d0f1a"), r(0, H - 4, W, 4, "#0d0f1a"));
+  L.push(r(0, yH, 4, H - yH, "#0b0b0c"), r(W - 4, yH, 4, H - yH, "#0b0b0c"), r(0, H - 4, W, 4, "#0b0b0c"));
 
   return div().absolute().left(0).top(0).w(W).h(H).overflow_hidden().children(L);
 }

@@ -553,18 +553,18 @@ export default class Spaces extends View {
     const lit = working > 0, any = crew.length > 0;
     const skin = (a) => { const k = String(a.program?.key ?? a.program?.name ?? a.agent ?? a.report?.app ?? a.status?.app ?? a.app ?? a.name ?? a.title ?? "").toLowerCase(); return k.includes("hermes") ? ["#E8B04A", "#2F3346"] : k.includes("claude") ? ["#D97757", "#D97757"] : k.includes("codex") ? ["#5B6CF0", "#5B6CF0"] : k.includes("opencode") ? ["#4A5B80", "#F7F4EC"] : (k.includes("antigravity") || k === "agy") ? ["#F6A03A", "#3186FF"] : ["#F1E7D3", "#F1E7D3"]; };
     const room = div().relative().w(54).h(40).flex_none().overflow_hidden()
-      .child(R(0, 0, 54, 24, any ? "#2a2f52" : "#20243d")).child(R(0, 0, 54, 3, soften(fill))).child(R(0, 3, 54, 1, "#ffffff22"))
-      .child(R(4, 7, 22, 15, "#0c0e1c")).child(R(5, 8, 20, 13, lit ? "#1a2350" : "#0e1226"))
+      .child(R(0, 0, 54, 24, any ? "#232427" : "#1b1b1d")).child(R(0, 0, 54, 3, soften(fill))).child(R(0, 3, 54, 1, "#ffffff22"))
+      .child(R(4, 7, 22, 15, "#0b0b0d")).child(R(5, 8, 20, 13, lit ? "#1a2350" : "#0e1226"))
       .child(R(6, 15, 4, 6, "#121733")).child(R(11, 12, 5, 9, "#121733")).child(R(17, 16, 6, 5, "#121733"))
       .child(R(12, 14, 1, 1, "#f5e9b0")).child(R(14, 17, 1, 1, "#f5e9b0")).child(R(7, 17, 1, 1, "#e0b94a")).child(R(19, 18, 1, 1, "#e0b94a"))
-      .child(R(20, 10, 3, 3, lit ? "#f7efc0" : "#9a947a")).child(R(14, 8, 1, 13, "#0c0e1c"))
-      .child(R(31, 6, 19, 16, "#0a0c1a")).child(R(32, 7, 17, 14, "#10132a"))
+      .child(R(20, 10, 3, 3, lit ? "#f7efc0" : "#9a947a")).child(R(14, 8, 1, 13, "#0b0b0d"))
+      .child(R(31, 6, 19, 16, "#0a0a0c")).child(R(32, 7, 17, 14, "#101013"))
       .children([["#f4723a", 0, 9], ["#8fcb4f", 3, 10], ["#37c5d6", 0, 6], ["#f9d23c", 2, 11], ["#c678dd", 0, 8], ["#f38ba8", 4, 9]].map(([c, x, w], k) => { const bar = R(34 + x, 9 + k * 2, Math.min(w, 13 - x), 1, c); return lit && k % 2 === 0 ? bar.loop("opacity", { from: 0.4, to: 1, period: 800 + k * 200, easing: "ease-in-out" }) : bar; }))
-      .child(R(0, 24, 54, 16, "#242843")).child(R(0, 24, 54, 2, "#171a2c")).child(R(0, 31, 54, 1, "#1c1f36")).child(R(18, 26, 1, 14, "#1c1f36")).child(R(36, 26, 1, 14, "#1c1f36"))
+      .child(R(0, 24, 54, 16, "#1d1d20")).child(R(0, 24, 54, 2, "#131315")).child(R(0, 31, 54, 1, "#17181a")).child(R(18, 26, 1, 14, "#17181a")).child(R(36, 26, 1, 14, "#17181a"))
       .children([0, 1, 2].flatMap((k) => {
         const x = 3 + k * 17, a = crew[k];
-        const pet = a ? (() => { const [c1, c2] = skin(a); return [R(x + 2, 24, 10, 8, "#3c4054"), R(x + 3, 23, 8, 4, c1), R(x + 3, 26, 8, 4, c2), R(x + 4, 25, 1, 2, "#14131f"), R(x + 8, 25, 1, 2, "#14131f")]; })() : [];
-        const glow = a ? R(x + 3, 30, 8, 3, a.status === "blocked" ? "#f38ba8" : "#d8def0") : R(x + 3, 30, 8, 3, "#323650");
+        const pet = a ? (() => { const [c1, c2] = skin(a); return [R(x + 2, 24, 10, 8, "#2a2a2c"), R(x + 3, 23, 8, 4, c1), R(x + 3, 26, 8, 4, c2), R(x + 4, 25, 1, 2, "#14131f"), R(x + 8, 25, 1, 2, "#14131f")]; })() : [];
+        const glow = a ? R(x + 3, 30, 8, 3, a.status === "blocked" ? "#f38ba8" : "#d8def0") : R(x + 3, 30, 8, 3, "#262628");
         const mark = a && a.status === "blocked" ? [R(x + 12, 20, 2, 5, "#f9e2af").loop("opacity", { from: 0.2, to: 1, period: 700, easing: "linear" }), R(x + 12, 26, 2, 2, "#f9e2af")] : a && a.status === "done" ? [R(x + 11, 21, 2, 2, "#a6e3a1"), R(x + 2, 20, 2, 2, "#f9e2af")] : [];
         return [...pet, R(x, 32, 14, 3, "#646a8c"), R(x, 32, 14, 1, "#8a91b6"), glow, ...mark];
       }));
