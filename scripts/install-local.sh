@@ -3,8 +3,11 @@
 #
 #   scripts/install-local.sh                   neutral (the repo's palette)
 #   scripts/install-local.sh --palette oled    or: tinted, catppuccin
+#   scripts/install-local.sh --no-backup       skip the timestamped backup (the original is still kept)
+#   scripts/install-local.sh --restore [original|<YYYYMMDD-HHMMSS>|<path>]
+#                                              put a backup back (default: the newest one)
 #
-# Steps:
+# Install steps:
 #   1. Back up the installed Pixel HQ files. The very first backup is kept for good as
 #      ~/.config/herdr-app-backup-original/. Later ones go to 
 #      ~/.config/herdr-app-backup-<timestamp>/.
@@ -19,6 +22,10 @@
 #   4. Run `herdr-app check` on every installed company-* mod and fail if one fails.
 #   5. Only after a clean install: delete all but the newest $KEEP_BACKUPS timestamped backups.
 #
+# --restore backs up the current install first (unless --no-backup), mirrors the chosen
+# backup in with the same excludes, runs the checks and prunes, never deleting the backup
+# it restored from. Installed company-* mods the backup lacks are reported, not deleted.
+#
 # HERDR_APP_HOME picks another config folder, as it does for Herdr itself.
 #
 # Written for macOS's bash 3.2: no mapfile, and no `[ … ] && cmd` as a function's last
@@ -31,11 +38,15 @@ HOME_DIR="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 ORIGINAL="$HOME_DIR-backup-original"
 KEEP_BACKUPS=3
 PALETTE="neutral"
+PALETTE_SET=0
+NO_BACKUP=0
+RESTORE=0
+RESTORE_ARG=""
 FILES=(layouts/pixel-hq.json layouts/pixel-hq.svg themes/pixel-hq.json)
 EXCLUDES=(--exclude gpui-kit.d.ts --exclude jsconfig.json --exclude __pycache__ --exclude '*.pyc' --exclude .DS_Store)
 BACKUP=""
 
-usage() { sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; }
 
 # Print the timestamped backups, oldest first (the timestamp makes names sort by time).
 list_backups() {
@@ -55,23 +66,37 @@ backup_to() {
   done
 }
 
-# Back up the current install and set BACKUP to where it went.
-# The first backup ever becomes $ORIGINAL, an older install's oldest timestamped backup is adopted as it.
-take_backup() {
+# Make sure $ORIGINAL exists: adopt the oldest timestamped backup, or back up the current install into it.
+# Returns 0 when it just backed up the current install (so no second backup is needed), 1 otherwise.
+ensure_original() {
   local oldest
-  if [ ! -d "$ORIGINAL" ]; then
-    oldest="$(list_backups | head -n 1)"
-    if [ -n "$oldest" ]; then
-      mv "$oldest" "$ORIGINAL"
-      echo "backup:  kept the oldest backup as $ORIGINAL"
-    else
-      backup_to "$ORIGINAL"
-      BACKUP="$ORIGINAL"
-      echo "backup:  $ORIGINAL (the first install, kept for good)"
-      return 0
-    fi
+  if [ -d "$ORIGINAL" ]; then return 1; fi
+  oldest="$(list_backups | head -n 1)"
+  if [ -n "$oldest" ]; then
+    mv "$oldest" "$ORIGINAL"
+    echo "backup:  kept the oldest backup as $ORIGINAL"
+    return 1
+  fi
+  backup_to "$ORIGINAL"
+  BACKUP="$ORIGINAL"
+  echo "backup:  $ORIGINAL (the first install, kept for good)"
+  return 0
+}
+
+# Back up the current install and set BACKUP to where it went. With --no-backup only $ORIGINAL is ensured.
+take_backup() {
+  if ensure_original; then return 0; fi
+  if [ "$NO_BACKUP" -eq 1 ]; then
+    echo "backup:  skipped (--no-backup)"
+    return 0
   fi
   BACKUP="$HOME_DIR-backup-$(date +%Y%m%d-%H%M%S)"
+  # Two runs in the same second would share a name (and write into a backup that may be
+  # the one being restored), so wait for a free timestamp.
+  while [ -e "$BACKUP" ]; do
+    sleep 1
+    BACKUP="$HOME_DIR-backup-$(date +%Y%m%d-%H%M%S)"
+  done
   backup_to "$BACKUP"
   echo "backup:  $BACKUP"
 }
@@ -103,25 +128,63 @@ check_mods() {
   return "$failed"
 }
 
-# Delete all but the newest $KEEP_BACKUPS timestamped backups. Never touches $ORIGINAL.
+# Delete all but the newest $KEEP_BACKUPS timestamped backups. Never touches $ORIGINAL,
+# nor the backup named in $1 (the one just restored from), which may leave one extra.
 prune_backups() {
-  local total old
+  local keep="${1:-}" total old
   total="$(list_backups | wc -l | tr -d ' ')"
   if [ "$total" -le "$KEEP_BACKUPS" ]; then return 0; fi
   list_backups | head -n "$((total - KEEP_BACKUPS))" | while IFS= read -r old; do
+    if [ "$old" = "$keep" ]; then continue; fi
     rm -rf "$old"
     echo "prune:   $old"
   done
 }
 
+# Print the backup folder that --restore's argument $1 names, or exit 2 if there is none.
+resolve_restore() {
+  local arg="$1" dir
+  case "$arg" in
+    "") dir="$(list_backups | tail -n 1)"; if [ -z "$dir" ]; then dir="$ORIGINAL"; fi ;;
+    original) dir="$ORIGINAL" ;;
+    [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]) dir="$HOME_DIR-backup-$arg" ;;
+    *) dir="${arg%/}" ;;
+  esac
+  if [ ! -d "$dir/mods" ] && [ ! -d "$dir/layouts" ]; then
+    echo "install-local: no backup at $dir" >&2
+    exit 2
+  fi
+  printf '%s\n' "$dir"
+}
+
+# Report installed company-* mods that the backup in $1 does not have; they are left in place.
+warn_extra_mods() {
+  local src="$1" mod
+  for mod in "$HOME_DIR"/mods/company-*; do
+    if [ -d "$mod" ] && [ ! -d "$src/mods/$(basename "$mod")" ]; then
+      echo "warning: $(basename "$mod") is installed but not in the backup; left as it is"
+    fi
+  done
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
-    --palette) PALETTE="${2:?--palette needs a name}"; shift 2 ;;
-    --palette=*) PALETTE="${1#*=}"; shift ;;
+    --palette) PALETTE="${2:?--palette needs a name}"; PALETTE_SET=1; shift 2 ;;
+    --palette=*) PALETTE="${1#*=}"; PALETTE_SET=1; shift ;;
+    --no-backup) NO_BACKUP=1; shift ;;
+    --restore)
+      RESTORE=1; shift
+      if [ $# -gt 0 ] && [ "${1#-}" = "$1" ]; then RESTORE_ARG="$1"; shift; fi ;;
+    --restore=*) RESTORE=1; RESTORE_ARG="${1#*=}"; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "install-local: unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
+
+if [ "$RESTORE" -eq 1 ] && [ "$PALETTE_SET" -eq 1 ]; then
+  echo "install-local: --restore puts a backup back as it was; it cannot take --palette" >&2
+  exit 2
+fi
 
 if ! python3 -c 'import json,sys; sys.exit(0 if sys.argv[2] in json.load(open(sys.argv[1]))["presets"] else 1)' \
     "$REPO/scripts/palettes.json" "$PALETTE"; then
@@ -131,6 +194,24 @@ fi
 if [ ! -d "$HOME_DIR" ]; then
   echo "install-local: $HOME_DIR does not exist; open Herdr once first" >&2
   exit 1
+fi
+
+if [ "$RESTORE" -eq 1 ]; then
+  # Settle $ORIGINAL first (it may rename the oldest backup), then resolve the source,
+  # then back up: otherwise "the newest backup" would be the one about to be made.
+  ensure_original || true
+  SOURCE="$(resolve_restore "$RESTORE_ARG")"
+  take_backup
+  warn_extra_mods "$SOURCE"
+  mirror_into_home "$SOURCE"
+  echo "restore: $SOURCE -> $HOME_DIR"
+  if ! check_mods "$SOURCE"; then
+    echo "install-local: a restored mod failed its check" >&2
+    exit 1
+  fi
+  prune_backups "$SOURCE"
+  echo "done. If the window does not refresh, quit and reopen Herdr once."
+  exit 0
 fi
 
 # 1. Back up what is currently installed.
@@ -155,7 +236,7 @@ echo "install: $(ls -1d "$STAGE"/mods/company-* | wc -l | tr -d ' ') mods, layou
 
 # 4. Check every mod.
 if ! check_mods "$STAGE"; then
-  echo "install-local: a mod failed its check; restore with: cp -Rp \"$BACKUP\"/* \"$HOME_DIR\"/" >&2
+  echo "install-local: a mod failed its check; put the previous install back with: $0 --restore" >&2
   exit 1
 fi
 
